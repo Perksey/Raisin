@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net5.0</TargetFramework>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Microsoft.Build.Locator" Version="1.4.1" />
+      <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.9.0" />
+      <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="3.9.0" />
+      <PackageReference Include="NuDoq" Version="2.0.1" />
+      <PackageReference Include="System.CommandLine" Version="2.0.0-beta1.20574.7" />
+      <PackageReference Include="Ultz.Extensions.Logging" Version="2.0.1" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Raisin.ApiDocs.Models\Raisin.ApiDocs.Models.csproj" />
+    </ItemGroup>
+
+</Project>
