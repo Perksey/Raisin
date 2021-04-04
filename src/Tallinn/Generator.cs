@@ -5,9 +5,9 @@ using System.Threading.Tasks;
 using Microsoft.Build.Locator;
 using Microsoft.CodeAnalysis.MSBuild;
 using Microsoft.Extensions.Logging;
-using Raisin.ApiDocs.Models;
+using Tallinn.Models;
 
-namespace Raisin.ApiDocs.Scraper
+namespace Tallinn
 {
     public static class Generator
     {
@@ -23,7 +23,7 @@ namespace Raisin.ApiDocs.Scraper
                 // Handle selecting the version of MSBuild you want to use.
                 : SelectVisualStudioInstance(visualStudioInstances);
 
-            Console.WriteLine($"Using MSBuild at '{instance.MSBuildPath}' to load projects.");
+            Logger.LogInformation($"Using MSBuild at '{instance.MSBuildPath}' to load projects.");
 
             // NOTE: Be sure to register an instance with the MSBuildLocator 
             //       before calling MSBuildWorkspace.Create()
@@ -44,7 +44,7 @@ namespace Raisin.ApiDocs.Scraper
             var documentation = new Documentation();
             var projectHandler = new ProjectHandler(documentation);
             var results =
-                await Task.WhenAll(solution.Projects.Select(x => Task.Run(() => projectHandler.HandleProjectAsync(x))));
+                await Task.WhenAll(solution.Projects.Select(projectHandler.HandleProjectAsync));
             var failureCount = results.Count(x => x);
             if (failureCount > 0)
             {

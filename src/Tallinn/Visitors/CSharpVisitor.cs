@@ -1,8 +1,8 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Raisin.ApiDocs.Models;
+using Tallinn.Models;
 
-namespace Raisin.ApiDocs.Scraper.Visitors
+namespace Tallinn.Visitors
 {
     public partial class CSharpVisitor : CSharpSyntaxVisitor
     {

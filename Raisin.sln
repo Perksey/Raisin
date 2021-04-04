@@ -1,16 +1,22 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raisin.ApiDocs.Scraper", "src\Raisin.ApiDocs.Scraper\Raisin.ApiDocs.Scraper.csproj", "{8706C8F2-5902-45F7-8954-3F243FD5DEFC}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tallinn", "src\Tallinn\Tallinn.csproj", "{8706C8F2-5902-45F7-8954-3F243FD5DEFC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raisin.ApiDocs.Models", "src\Raisin.ApiDocs.Models\Raisin.ApiDocs.Models.csproj", "{A38864AF-03FC-41C6-B79A-1BF88B6DA418}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tallinn.Models", "src\Tallinn.Models\Tallinn.Models.csproj", "{A38864AF-03FC-41C6-B79A-1BF88B6DA418}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raisin.Markdown", "src\Raisin.Markdown\Raisin.Markdown.csproj", "{5622B728-F360-47E7-A207-DA3B0BF6C8F5}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raisin.Plugins.Markdown", "src\Raisin.Plugins.Markdown\Raisin.Plugins.Markdown.csproj", "{5622B728-F360-47E7-A207-DA3B0BF6C8F5}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raisin", "src\Raisin\Raisin.csproj", "{A1499BD9-357B-4BA7-9FA6-7DA4BCC7CE21}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raisin.Core", "src\Raisin.Core\Raisin.Core.csproj", "{E62CD19A-2023-4A51-B87D-92B81AB3DD7D}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{E51C94AC-AC6A-411D-AF10-61D13644CFC1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raisin.Plugins", "src\Raisin.Plugins\Raisin.Plugins.csproj", "{E3B270E3-C50B-45A0-8D38-359AAF98A979}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raisin.Plugins.TableOfContents", "src\Raisin.Plugins.TableOfContents\Raisin.Plugins.TableOfContents.csproj", "{D3D86364-4CF2-4A21-9588-E56E14C7BCE5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raisin.Plugins.Tallinn", "src\Raisin.Plugins.Tallinn\Raisin.Plugins.Tallinn.csproj", "{A34C3302-04FF-4D66-9A6E-B480ECC708CE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -38,6 +44,18 @@ Global
 		{E62CD19A-2023-4A51-B87D-92B81AB3DD7D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E62CD19A-2023-4A51-B87D-92B81AB3DD7D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E62CD19A-2023-4A51-B87D-92B81AB3DD7D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E3B270E3-C50B-45A0-8D38-359AAF98A979}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E3B270E3-C50B-45A0-8D38-359AAF98A979}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E3B270E3-C50B-45A0-8D38-359AAF98A979}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E3B270E3-C50B-45A0-8D38-359AAF98A979}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D3D86364-4CF2-4A21-9588-E56E14C7BCE5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D3D86364-4CF2-4A21-9588-E56E14C7BCE5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D3D86364-4CF2-4A21-9588-E56E14C7BCE5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D3D86364-4CF2-4A21-9588-E56E14C7BCE5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A34C3302-04FF-4D66-9A6E-B480ECC708CE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A34C3302-04FF-4D66-9A6E-B480ECC708CE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A34C3302-04FF-4D66-9A6E-B480ECC708CE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A34C3302-04FF-4D66-9A6E-B480ECC708CE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{A1499BD9-357B-4BA7-9FA6-7DA4BCC7CE21} = {E51C94AC-AC6A-411D-AF10-61D13644CFC1}
@@ -45,5 +63,8 @@ Global
 		{8706C8F2-5902-45F7-8954-3F243FD5DEFC} = {E51C94AC-AC6A-411D-AF10-61D13644CFC1}
 		{E62CD19A-2023-4A51-B87D-92B81AB3DD7D} = {E51C94AC-AC6A-411D-AF10-61D13644CFC1}
 		{5622B728-F360-47E7-A207-DA3B0BF6C8F5} = {E51C94AC-AC6A-411D-AF10-61D13644CFC1}
+		{E3B270E3-C50B-45A0-8D38-359AAF98A979} = {E51C94AC-AC6A-411D-AF10-61D13644CFC1}
+		{D3D86364-4CF2-4A21-9588-E56E14C7BCE5} = {E51C94AC-AC6A-411D-AF10-61D13644CFC1}
+		{A34C3302-04FF-4D66-9A6E-B480ECC708CE} = {E51C94AC-AC6A-411D-AF10-61D13644CFC1}
 	EndGlobalSection
 EndGlobal

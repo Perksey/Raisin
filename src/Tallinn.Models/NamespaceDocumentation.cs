@@ -1,4 +1,4 @@
-namespace Raisin.ApiDocs.Models
+namespace Tallinn.Models
 {
     public class NamespaceDocumentation
     {

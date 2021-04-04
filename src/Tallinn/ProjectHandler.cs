@@ -3,10 +3,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Logging;
-using Raisin.ApiDocs.Models;
-using Raisin.ApiDocs.Scraper.Visitors;
+using Tallinn.Models;
+using Tallinn.Visitors;
 
-namespace Raisin.ApiDocs.Scraper
+namespace Tallinn
 {
     public class ProjectHandler
     {

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Ultz.Extensions.Logging;
 
-namespace Raisin.ApiDocs.Scraper
+namespace Tallinn
 {
     class Program
     {
@@ -18,7 +18,7 @@ namespace Raisin.ApiDocs.Scraper
         private static readonly ILogger Logger = LoggerProvider.CreateLogger("Core");
         static async Task<int> Main(string[] args)
         {
-            Console.WriteLine("RAISIN - Documentation Scraper - " +
+            Console.WriteLine("TALLINN - C# Documentation and Metadata Scraper - " +
                               $"v{typeof(Program).Assembly.GetName().Version?.ToString(3)}");
             Console.WriteLine();
             var rootCommand = new RootCommand
@@ -28,7 +28,11 @@ namespace Raisin.ApiDocs.Scraper
                     "The input sln to scrape documentation from"),
                 new Option<FileInfo>(
                     new []{"--output", "-o"},
-                    "The output raisin file.")
+                    "The output Tallinn API file (usually with extension .tallinn)"),
+                new Option<string>(
+                    new[]{"--version", "-v"},
+                    () => "latest",
+                    "The version for this API.")
             };
 
             rootCommand.Description = null;
