@@ -10,7 +10,7 @@ namespace Tallinn.Models
         public string Name { get; set; }
         public ConcurrentDictionary<string, ProjectDocumentation> Projects { get; set; } = new();
 
-        public static Documentation FromStream(Stream stream, bool leaveOpen = false)
+        public static Documentation? FromStream(Stream stream, bool leaveOpen = false)
         {
             using var gz = new GZipStream(stream, CompressionMode.Decompress, leaveOpen);
             using var sr = new StreamReader(gz);
@@ -32,7 +32,7 @@ namespace Tallinn.Models
                 return RetrievalResult.Existed;
             }
 
-            result = Projects[name] = new();
+            result = Projects[name] = new ProjectDocumentation();
             return RetrievalResult.Created;
         }
     }

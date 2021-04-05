@@ -1,4 +1,4 @@
-﻿using System.Collections.Immutable;
+﻿using System.Collections.Generic;
 using Tallinn.Models.Textual;
 
 namespace Tallinn.Models
@@ -7,8 +7,8 @@ namespace Tallinn.Models
     {
         public abstract ITextualDocumentation? Summary { get; set; }
         public abstract ITextualDocumentation? Remarks { get; set; }
-        public abstract ITextualDocumentation? SeeAlso { get; set; }
-        public abstract ImmutableArray<ITextualDocumentation?> Examples { get; set; }
-        public abstract string[] DeclarationLines { get; set; }
+        public abstract List<ITextualDocumentation?> SeeAlso { get; set; }
+        public abstract List<ITextualDocumentation?> Examples { get; set; }
+        public abstract List<string> DeclarationLines { get; set; }
     }
 }
