@@ -2,6 +2,6 @@
 {
     public static class PluginDownloader
     {
-        
+        // TODO use NuGet to download packages
     }
 }

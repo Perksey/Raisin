@@ -1,0 +1,8 @@
+@using RazorLight
+@using Raisin.Core
+@inherits TemplatePage<object>
+
+@if (Model is HtmlModel html)
+{
+    @Raw(html.Html)
+}

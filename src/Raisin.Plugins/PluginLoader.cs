@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Runtime.Loader;
+using Microsoft.Extensions.Logging;
 
 namespace Raisin.PluginSystem
 {
@@ -10,19 +11,17 @@ namespace Raisin.PluginSystem
     {
         public static IEnumerable<string> LoadAndEnumerateUserFacingNamespaces(
             Func<SavedPlugin[]> savedPluginProvider,
-            Func<SavedPlugin, Stream?> getPlugin,
-            AssemblyLoadContext? ctx = null,
+            Func<SavedPlugin, Assembly?> getPlugin,
             ILoggerProvider? loggerProvider = null,
             ILogger? logger = null)
         {
-            ctx ??= AssemblyLoadContext.Default;
             logger ??= loggerProvider?.CreateLogger("PluginLoader");
             var raisinVersion = typeof(PluginLoader).Assembly.GetName().Version ??
                                 throw new InvalidOperationException("Couldn't retrieve Raisin version.");
             foreach (var plugin in savedPluginProvider())
             {
-                var s = getPlugin(plugin);
-                if (s is null)
+                var asm = getPlugin(plugin);
+                if (asm is null)
                 {
                     continue;
                 }
@@ -34,7 +33,7 @@ namespace Raisin.PluginSystem
                     continue;
                 }
                 
-                var attr = ctx.LoadFromStream(s).GetCustomAttribute<RaisinPluginAttribute>();
+                var attr = asm.GetCustomAttribute<RaisinPluginAttribute>();
                 if (attr is null)
                 {
                     logger.LogError($"Couldn't load plugin \"{plugin.Name}\" because its assembly had no " +

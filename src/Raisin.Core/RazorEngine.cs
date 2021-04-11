@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Dynamic;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using RazorLight;
+using RazorLight.Extensions;
 
 namespace Raisin.Core
 {
@@ -36,11 +38,12 @@ namespace Raisin.Core
             Logger = raisin.GetLoggerOrDefault<RazorEngine>();
             Razor = new(() =>
             {
-                Logger?.LogInformation("Creating Razor Light engine...");
-                return new RazorLightEngineBuilder()
+                var ret = new RazorLightEngineBuilder()
                     .UseFileSystemProject(Raisin.InputDirectory)
                     .UseMemoryCachingProvider()
                     .Build();
+                Logger?.LogInformation("Created Razor Light engine.");
+                return ret;
             });
         }
 
@@ -50,6 +53,7 @@ namespace Raisin.Core
         /// <param name="model">The model to compile the Razor root using.</param>
         /// <returns>HTML bytes.</returns>
         public async Task<byte[]> BuildFileAsync(object model)
-            => Encoding.UTF8.GetBytes(await Razor.Value.CompileRenderAsync(Raisin.RazorRoot, model));
+            => Encoding.UTF8.GetBytes(await Razor.Value.CompileRenderAsync(Raisin.RazorRoot, model,
+                new {RazorEngine = this}.ToExpando()));
     }
 }

@@ -2,6 +2,7 @@
 
     <PropertyGroup>
         <TargetFramework>net5.0</TargetFramework>
+        <PreserveCompilationContext>true</PreserveCompilationContext>
     </PropertyGroup>
 
     <ItemGroup>
@@ -9,6 +10,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\Raisin.Core\Raisin.Core.csproj" />
       <ProjectReference Include="..\Raisin.Plugins\Raisin.Plugins.csproj" />
     </ItemGroup>
 

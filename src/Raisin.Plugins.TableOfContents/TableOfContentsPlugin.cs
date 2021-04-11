@@ -8,6 +8,9 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.FileSystemGlobbing;
 using Microsoft.Extensions.Logging;
 using Raisin.Core;
+using Raisin.PluginSystem;
+
+[assembly: RaisinPlugin("Raisin.Plugins.TableOfContents")]
 
 namespace Raisin.Plugins.TableOfContents
 {

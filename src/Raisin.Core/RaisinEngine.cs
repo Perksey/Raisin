@@ -251,7 +251,7 @@ namespace Raisin.Core
                 throw new InvalidOperationException("No output directory specified.");
             }
 
-            if (Directory.GetFiles(OutputDirectory, "*", SearchOption.TopDirectoryOnly).Any())
+            if (Directory.GetFiles(OutputDirectory.CreateDirectoryIfNeeded(), "*", SearchOption.TopDirectoryOnly).Any())
             {
                 Logger?.LogWarning("It's generally recommended to have a clean output directory, as Raisin will not " +
                                    "delete old files.");
@@ -268,7 +268,7 @@ namespace Raisin.Core
                 }
                 catch (Exception ex)
                 {
-                    Logger?.LogError(ex, $"Failed to generate pages for \"{x.Key}\".");
+                    Logger?.LogError(ex, $"Failed to generate pages for \"{x.Key}\". {ex}");
                     return;
                 }
 
@@ -306,7 +306,7 @@ namespace Raisin.Core
                     {
                         try
                         {
-                            await using var stream = File.OpenWrite(Path.Combine(OutputDirectory, dest));
+                            await using var stream = File.OpenWrite(Path.Combine(OutputDirectory, dest).CreateFileDirectoryIfNeeded());
                             await stream.WriteAsync(data);
                             await stream.FlushAsync();
                             if (!fileMap.TryUpdate(key, (tuple.To, tuple.From, true), tuple))
@@ -321,7 +321,7 @@ namespace Raisin.Core
                         }
                         catch (Exception ex)
                         {
-                            Logger?.LogError(ex, $"Failed to write \"{x.Key.PathFixup()}\" -> \"{dest}\"");
+                            Logger?.LogError(ex, $"Failed to write \"{x.Key.PathFixup()}\" -> \"{dest}\". {ex}");
                         }
                     }
                 }
