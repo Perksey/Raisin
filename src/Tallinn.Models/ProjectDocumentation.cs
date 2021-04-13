@@ -4,6 +4,7 @@ namespace Tallinn.Models
 {
     public class ProjectDocumentation
     {
+        public string Name { get; set; }
         public string AssemblyName { get; set; }
         public string PackageId { get; set; }
         public string Description { get; set; }
