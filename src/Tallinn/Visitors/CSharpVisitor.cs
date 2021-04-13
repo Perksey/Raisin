@@ -1,6 +1,12 @@
+using System.IO;
+using System.Xml;
+using Microsoft.Build.Construction;
+using Microsoft.Build.Evaluation;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Tallinn.Models;
+using MSBuildProject = Microsoft.Build.Evaluation.Project;
+using Project = Microsoft.CodeAnalysis.Project;
 
 namespace Tallinn.Visitors
 {
@@ -11,12 +17,31 @@ namespace Tallinn.Visitors
             Documentation = documentation;
             Project = project;
             Compilation = compilation;
+            
+            using var xmlReader = XmlReader.Create(File.OpenRead(project.FilePath!));
+            MsBuildProject = new MSBuildProject(ProjectRootElement.Create(xmlReader, new ProjectCollection(), true));
         }
 
         public Documentation Documentation { get; }
         public Project Project { get; }
+        public MSBuildProject MsBuildProject { get; }
         public Compilation Compilation { get; }
-        
-        
+
+        public ProjectDocumentation GetProject()
+        {
+            var retrieved = Documentation.GetOrCreateProject(Project.Name, out var ret);
+            if (retrieved == RetrievalResult.Created)
+            {
+                ret.AssemblyName = Project.AssemblyName;
+                ret.Description = MsBuildProject.GetPropertyValue("Description");
+                ret.PackageId = MsBuildProject.GetPropertyValue("PackageId");
+                if (string.IsNullOrWhiteSpace(ret.PackageId))
+                {
+                    ret.PackageId = ret.AssemblyName;
+                }
+            }
+
+            return ret;
+        }
     }
 }

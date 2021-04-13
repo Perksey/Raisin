@@ -26,14 +26,14 @@ namespace Tallinn.Models
 
         public RetrievalResult GetOrCreateProject(string name, out ProjectDocumentation result)
         {
-            if (Projects.TryGetValue(name, out var project))
+            var ret = RetrievalResult.Existed;
+            result = Projects.GetOrAdd(name, _ =>
             {
-                result = project;
-                return RetrievalResult.Existed;
-            }
-
-            result = Projects[name] = new ProjectDocumentation();
-            return RetrievalResult.Created;
+                ret = RetrievalResult.Created;
+                return new ProjectDocumentation();
+            });
+            
+            return ret;
         }
     }
 }
