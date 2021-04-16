@@ -25,31 +25,37 @@ namespace Raisin.Plugins.TableOfContents
                 matcher.AddInclude(tocGlob);
             }
 
-            var tocModels = matcher.GetResultsInFullPath(engine.InputDirectory).Select(x =>
+            var rawTocModels = matcher.GetResultsInFullPath(engine.InputDirectory).Select(x =>
             {
                 try
                 {
-                    return ((string, TocElementModel?)?) (x,
-                        JsonSerializer.Deserialize<TocElementModel>(File.ReadAllText(x, Encoding.UTF8)));
+                    // load all the ToC JSON file names we globbed.
+                    return ((string, TableOfContentsElement?)?) (x,
+                        JsonSerializer.Deserialize<TableOfContentsElement>(File.ReadAllText(x, Encoding.UTF8)));
                 }
                 catch (Exception ex)
                 {
-                    logger.LogWarning(ex, $"Couldn't parse table of contents file as JSON: \"{x}\"");
+                    logger.LogWarning(ex, $"Couldn't parse table of contents file \"{x}\" as JSON: {ex.Message}");
                     return null;
                 }
             }).Where(x => x?.Item2 != null).SelectMany(x =>
             {
+                // get the file name of the ToC JSON file and the ToC model within it
                 var (file, model) = x!.Value;
+                // all paths in the model are relative to the directory in which the toc is contained.
+                // get the path of the ToC in the input directory, and walk relative to that.
                 var tocBasePath = Path.GetDirectoryName(Path.GetRelativePath(
                     engine.InputDirectory ?? throw new InvalidOperationException("No input directory provided."),
                     file))!;
+                // get all ToC entries
                 return Walk(model!, tocBasePath, model!);
-            }).ToDictionary(x => x.Rel.PathFixup(), x => x.RootModel);
+            }).Select(x => (x.Rel.PathFixup(), x.RootModel));
+            var tocModels = Link(rawTocModels);
 
             return engine.WithRazorModelOverride((srcRel, @base) =>
             {
                 var (_, baseModel) = @base;
-                TocElementModel? toc;
+                TableOfContentsElement? toc;
                 switch (engine.UseCaseSensitivePaths)
                 {
                     case true when tocModels.TryGetValue(srcRel, out toc):
@@ -58,7 +64,7 @@ namespace Raisin.Plugins.TableOfContents
                         var (_, root, child) = Walk(copy, toc.TocBasePath, copy).FirstOrDefault(x => x.Rel == srcRel);
                         child.IsActive = true;
                         return Task.FromResult<object>(new TableOfContentsModel
-                            {BaseModel = baseModel, TocRoot = root});
+                            {BaseModel = baseModel, TableOfContentsRoot = root});
                     }
                     case false when (toc = tocModels
                         .FirstOrDefault(x => x.Key.Equals(srcRel, StringComparison.OrdinalIgnoreCase))
@@ -69,7 +75,7 @@ namespace Raisin.Plugins.TableOfContents
                             .FirstOrDefault(x => x.Rel.Equals(srcRel, StringComparison.OrdinalIgnoreCase));
                         child.IsActive = true;
                         return Task.FromResult<object>(new TableOfContentsModel
-                            {BaseModel = baseModel, TocRoot = root});
+                            {BaseModel = baseModel, TableOfContentsRoot = root});
                     }
                     default:
                     {
@@ -79,13 +85,13 @@ namespace Raisin.Plugins.TableOfContents
             });
         }
 
-        private static IEnumerable<(string Rel, TocElementModel RootModel, TocElementModel Model)> Walk(
-            TocElementModel child, string tocBasePath, TocElementModel rootModel)
+        private static IEnumerable<(string Rel, TableOfContentsElement RootModel, TableOfContentsElement Model)> Walk(
+            TableOfContentsElement child, string tocBasePath, TableOfContentsElement root)
         {
             child.TocBasePath = tocBasePath;
             if (child.Url is not null)
             {
-                yield return (Path.Combine(tocBasePath, child.Url), rootModel!, child);
+                yield return (Path.Combine(tocBasePath, child.Url), root!, child);
             }
         }
     }

@@ -5,7 +5,7 @@ using System.Text.Json.Serialization;
 
 namespace Raisin.Plugins.TableOfContents
 {
-    public class TocElementModel : ICloneable
+    public class TableOfContentsElement : ICloneable
     {
         /// <summary>
         /// The name of this page.
@@ -21,7 +21,7 @@ namespace Raisin.Plugins.TableOfContents
         /// <summary>
         /// The elements beneath this element in the table of contents.
         /// </summary>
-        public ImmutableArray<TocElementModel> Children { get; internal set; }
+        public ImmutableArray<TableOfContentsElement> Children { get; internal set; }
 
         /// <summary>
         /// Whether the <see cref="TableOfContentsModel"/> containing this element is being passed to the page
@@ -55,10 +55,13 @@ namespace Raisin.Plugins.TableOfContents
         
         [JsonIgnore]
         internal string TocBasePath { get; set; }
+        
+        [JsonIgnore]
+        public TableOfContentsElement? Parent { get; internal set; }
 
         object ICloneable.Clone() => Clone();
 
-        public TocElementModel Clone() => new()
+        public TableOfContentsElement Clone() => new()
         {
             Name = Name,
             Url = Url,

@@ -5,10 +5,8 @@ using Tallinn.Models.Textual;
 
 namespace Tallinn.Models
 {
-    public class MethodDocumentation : BaseXmlDocumentation
+    public class MethodDocumentation : MemberDocumentation
     {
-        public string MethodName { get; set; }
-        public Accessibility Access { get; set; }
         public override ITextualDocumentation? Summary { get; set; }
         public override ITextualDocumentation? Remarks { get; set; }
         public override List<ITextualDocumentation?> SeeAlso { get; set; }

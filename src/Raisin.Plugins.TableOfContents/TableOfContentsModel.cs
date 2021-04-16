@@ -2,7 +2,7 @@
 {
     public struct TableOfContentsModel
     {
-        public TocElementModel TocRoot { get; internal set; }
+        public TableOfContentsElement TableOfContentsRoot { get; internal set; }
         public object BaseModel { get; internal set; }
     }
 }

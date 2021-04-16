@@ -5,7 +5,7 @@ namespace Tallinn.Models
 {
     public class MemberDocumentation : BaseXmlDocumentation
     {
-        public string MemberName { get; set; }
+        public string Name { get; set; }
         public override ITextualDocumentation? Summary { get; set; }
         public override ITextualDocumentation? Remarks { get; set; }
         public override List<ITextualDocumentation?> SeeAlso { get; set; }
@@ -19,5 +19,13 @@ namespace Tallinn.Models
         /// </list>
         /// </summary>
         public override List<string> DeclarationLines { get; set; }
+    }
+
+    public class FieldDocumentation : MemberDocumentation
+    {
+    }
+
+    public class PropertyDocumentation : MemberDocumentation
+    {
     }
 }

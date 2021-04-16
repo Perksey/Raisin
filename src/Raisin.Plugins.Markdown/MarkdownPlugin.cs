@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using Microsoft.Extensions.Logging;
 using Raisin.Core;
 using Raisin.PluginSystem;
 
@@ -19,6 +20,8 @@ namespace Raisin.Plugins.Markdown
                 mdGlobs = _defaultGlobArray;
             }
 
+            var logger = engine.GetLoggerOrDefault(nameof(MarkdownPlugin));
+            logger.LogInformation("Markdown plugin enabled.");
             return mdGlobs.Aggregate
             (
                 engine,

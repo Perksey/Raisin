@@ -74,7 +74,15 @@ namespace Raisin.Core
         /// </summary>
         /// <typeparam name="T">The type to get a logger for.</typeparam>
         /// <returns>A logger, or null if this generator is not configured for logging.</returns>
-        public ILogger? GetLoggerOrDefault<T>() => LoggerProvider?.CreateLogger(typeof(T).Name) ?? Logger;
+        public ILogger? GetLoggerOrDefault<T>() => GetLoggerOrDefault(typeof(T).Name);
+
+        /// <summary>
+        /// Retrieves a logger with the given name if this Raisin generator is configured for logging, or null
+        /// otherwise. 
+        /// </summary>
+        /// <typeparam name="T">The type to get a logger for.</typeparam>
+        /// <returns>A logger, or null if this generator is not configured for logging.</returns>
+        public ILogger? GetLoggerOrDefault(string name) => LoggerProvider?.CreateLogger(name) ?? Logger;
 
         /// <summary>
         /// Returns a glob pattern matcher which is either case sensitive or case insensitive, dependent on the value of
