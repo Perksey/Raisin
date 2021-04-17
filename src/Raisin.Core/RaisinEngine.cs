@@ -59,6 +59,13 @@ namespace Raisin.Core
         } = new();
 
         /// <summary>
+        /// Encapsulates state which is defined by a plugin and shared with others. Plugin developers should take care
+        /// to ensure that the key for this dictionary is unique to their plugin, and unlikely to conflict with other
+        /// plugins. This could be achieved by prepending state IDs with your plugin's namespace, for example.
+        /// </summary>
+        public ConcurrentDictionary<string, object> InterPluginState { get; } = new();
+
+        /// <summary>
         /// The logger provider used for Raisin generation.
         /// </summary>
         public ILoggerProvider? LoggerProvider { get; set; }
@@ -119,7 +126,10 @@ namespace Raisin.Core
         /// Registers a Razor generator for the files matches by the given glob pattern, which takes an input file, and
         /// asynchronously returns an enumerable of desired output paths and models to feed into the Razor engine.
         /// </summary>
-        /// <param name="glob">The glob pattern for the files to which this Razor generator applies, relative to the <see cref="InputDirectory"/></param>
+        /// <param name="glob">
+        /// The glob pattern for the files to which this Razor generator applies, relative to the
+        /// <see cref="InputDirectory"/>
+        /// </param>
         /// <param name="generator">The output Razor model generator to use.</param>
         /// <returns>This instance, for chaining purposes.</returns>
         public RaisinEngine WithRazorGenerator(string glob,

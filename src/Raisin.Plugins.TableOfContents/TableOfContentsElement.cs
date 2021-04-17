@@ -1,11 +1,11 @@
 ﻿using System;
-using System.Collections.Immutable;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
 
 namespace Raisin.Plugins.TableOfContents
 {
-    public class TableOfContentsElement : ICloneable
+    public class TableOfContentsElement
     {
         /// <summary>
         /// The name of this page.
@@ -21,7 +21,8 @@ namespace Raisin.Plugins.TableOfContents
         /// <summary>
         /// The elements beneath this element in the table of contents.
         /// </summary>
-        public ImmutableArray<TableOfContentsElement> Children { get; internal set; }
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public List<TableOfContentsElement>? Children { get; internal set; }
 
         /// <summary>
         /// Whether the <see cref="TableOfContentsModel"/> containing this element is being passed to the page
@@ -39,7 +40,7 @@ namespace Raisin.Plugins.TableOfContents
         /// children's children are active. To return true even in the latter case, use <see cref="IsAnyChildActive"/>.
         /// </remarks>
         [JsonIgnore]
-        public bool IsChildActive => Children.Any(static x => x.IsActive);
+        public bool IsChildActive => Children?.Any(static x => x.IsActive) ?? false;
 
         /// <summary>
         /// Whether any of the descendants in <see cref="Children"/> of this table of contents element are
@@ -51,23 +52,12 @@ namespace Raisin.Plugins.TableOfContents
         /// case, use <see cref="IsChildActive"/>.
         /// </remarks>
         [JsonIgnore]
-        public bool IsAnyChildActive => Children.Any(static x => x.IsActive || x.IsAnyChildActive);
+        public bool IsAnyChildActive => Children?.Any(static x => x.IsActive || x.IsAnyChildActive) ?? false;
         
         [JsonIgnore]
         internal string TocBasePath { get; set; }
         
         [JsonIgnore]
         public TableOfContentsElement? Parent { get; internal set; }
-
-        object ICloneable.Clone() => Clone();
-
-        public TableOfContentsElement Clone() => new()
-        {
-            Name = Name,
-            Url = Url,
-            Children = Children.Select(x => x.Clone()).ToImmutableArray(),
-            IsActive = IsActive,
-            TocBasePath = TocBasePath
-        };
     }
 }
