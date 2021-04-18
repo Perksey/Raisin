@@ -12,7 +12,7 @@ namespace Raisin
     {
         internal static ILoggerProvider LoggerProvider = new UltzLoggerProvider
         {
-            MessageFormat = "§7[{8}:{9}:{10}] [{1} §9{0}§7] §f{2}"
+            MessageFormat = "§7[{5:HH}:{5:mm}:{5:ss}] [{1} §9{0}§7] §f{2}"
         };
         private static readonly ILogger Logger = LoggerProvider.CreateLogger("Core");
         internal static readonly Version Version = typeof(Program).Assembly.GetName().Version;
@@ -20,8 +20,14 @@ namespace Raisin
         {
             Console.WriteLine($"RAISIN - Static Site Generator - v{Version?.ToString(3)}");
             Console.WriteLine();
+            if (args.Length == 0)
+            {
+                Console.WriteLine("Please provide a path to a CSX script to execute.");
+                return;
+            }
+            
             await Executor.RunAsync(args[0]);
-            Thread.Sleep(100); // TODO fix upstream
+            Thread.Sleep(1000); // TODO fix upstream
         }
     }
 }

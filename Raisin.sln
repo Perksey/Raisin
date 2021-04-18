@@ -11,6 +11,9 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raisin.Core", "src\Raisin.Core\Raisin.Core.csproj", "{E62CD19A-2023-4A51-B87D-92B81AB3DD7D}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{E51C94AC-AC6A-411D-AF10-61D13644CFC1}"
+ProjectSection(SolutionItems) = preProject
+	src\Directory.Build.props = src\Directory.Build.props
+EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raisin.Plugins", "src\Raisin.Plugins\Raisin.Plugins.csproj", "{E3B270E3-C50B-45A0-8D38-359AAF98A979}"
 EndProject

@@ -13,7 +13,7 @@
       <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="3.9.0" />
       <PackageReference Include="NuDoq" Version="2.0.1" />
       <PackageReference Include="System.CommandLine" Version="2.0.0-beta1.20574.7" />
-      <PackageReference Include="Ultz.Extensions.Logging" Version="2.0.1" />
+      <PackageReference Include="Ultz.Extensions.Logging" Version="3.0.0" />
     </ItemGroup>
 
     <ItemGroup>

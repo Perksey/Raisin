@@ -11,7 +11,7 @@ namespace Raisin.Plugins.Markdown
 {
     public static class MarkdownPlugin
     {
-        private static readonly string[] _defaultGlobArray = {"*.md"};
+        private static readonly string[] _defaultGlobArray = {"**/*.md"};
 
         public static RaisinEngine WithMarkdown(this RaisinEngine engine, params string[] mdGlobs)
         {
@@ -30,7 +30,8 @@ namespace Raisin.Plugins.Markdown
                     glob,
                     async src =>
                     (
-                        Path.GetFileNameWithoutExtension(src) + ".html",
+                        Path.Combine(Path.GetDirectoryName(src) ?? ".", Path.GetFileNameWithoutExtension(src) + ".html")
+                            .PathFixup(),
                         (object) new HtmlModel
                         {
                             Html = Markdig.Markdown.ToHtml(await File.ReadAllTextAsync(Path.Combine(

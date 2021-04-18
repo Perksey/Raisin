@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.FileSystemGlobbing;
 using Microsoft.Extensions.Logging;
@@ -34,6 +35,7 @@ namespace Raisin.Core
         public string? RazorRoot { get; set; }
         public Lazy<RazorEngine> Razor { get; }
         public bool UseCaseSensitivePaths { get; set; }
+        public bool ForceCleanOutput { get; set; }
 
         /// <summary>
         /// A concurrent dictionary where the key is the path of a source file relative to the
@@ -194,6 +196,12 @@ namespace Raisin.Core
             return this;
         }
 
+        public RaisinEngine WithForceCleanOutput(bool forceCleanOutput = true)
+        {
+            ForceCleanOutput = forceCleanOutput;
+            return this;
+        }
+
         public RaisinEngine WithLoggerProvider(ILoggerProvider loggerProvider)
         {
             LoggerProvider = loggerProvider;
@@ -268,11 +276,43 @@ namespace Raisin.Core
             {
                 throw new InvalidOperationException("No output directory specified.");
             }
+            
+            if (ForceCleanOutput)
+            {
+                for (var i = 1; i < 11; i++)
+                {
+                    try
+                    {
+                        if (!Directory.Exists(OutputDirectory))
+                        {
+                            break;
+                        }
+
+                        Directory.Delete(OutputDirectory, true);
+                    }
+                    catch (Exception ex)
+                    {
+                        if (i == 10)
+                        {
+                            Logger?.LogError($"Attempt {i} at forcing clean output directory failed.");
+                            throw;
+                        }
+
+                        Logger?.LogWarning($"Attempt {i} at forcing clean output directory failed with {ex}");
+                    }
+                    finally
+                    {
+                        // pause between attempts, and also pause after the successful attempt otherwise we get a
+                        // strange UnauthorizedAccessException
+                        Thread.Sleep(1000);
+                    }
+                }
+            }
 
             if (Directory.GetFiles(OutputDirectory.CreateDirectoryIfNeeded(), "*", SearchOption.TopDirectoryOnly).Any())
             {
                 Logger?.LogWarning("It's generally recommended to have a clean output directory, as Raisin will not " +
-                                   "delete old files.");
+                                   "delete old files. To force a clean, use WithForceCleanOutput.");
             }
 
             // Key = Lower Case Name, Value = (Destination File, Source File, Data)

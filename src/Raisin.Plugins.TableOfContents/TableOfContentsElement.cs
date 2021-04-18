@@ -10,19 +10,29 @@ namespace Raisin.Plugins.TableOfContents
         /// <summary>
         /// The name of this page.
         /// </summary>
+        [JsonInclude]
         public string Name { get; internal set; }
 
         /// <summary>
         /// The URL to the file referenced in the table of contents, relative to the table of contents file.
         /// </summary>
+        [JsonInclude]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public string? Url { get; internal set; }
 
         /// <summary>
         /// The elements beneath this element in the table of contents.
         /// </summary>
+        [JsonInclude]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public List<TableOfContentsElement>? Children { get; internal set; }
+
+        /// <summary>
+        /// Miscellaneous metadata, defined by the user and used by the Razor theme.
+        /// </summary>
+        [JsonInclude]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public Dictionary<string, string>? Metadata { get; internal set; }
 
         /// <summary>
         /// Whether the <see cref="TableOfContentsModel"/> containing this element is being passed to the page
@@ -56,6 +66,9 @@ namespace Raisin.Plugins.TableOfContents
         
         [JsonIgnore]
         internal string TocBasePath { get; set; }
+        
+        [JsonIgnore]
+        internal string TocFile { get; set; }
         
         [JsonIgnore]
         public TableOfContentsElement? Parent { get; internal set; }

@@ -52,7 +52,7 @@ namespace Raisin.PluginSystem
                                       $"(v{plugin.RaisinVersion}). Consider updating this plugin.");
                 }
                 
-                logger.LogInformation($"Loaded {plugin.Name} v{plugin.Version}");
+                logger.LogInformation($"Loaded {plugin.Name} v{plugin.Version.ToString(3)}");
                 foreach (var userFacingNamespace in attr.UserFacingNamespaces)
                 {
                     yield return userFacingNamespace;

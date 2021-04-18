@@ -13,7 +13,7 @@ namespace Tallinn
     {
         internal static ILoggerProvider LoggerProvider = new UltzLoggerProvider
         {
-            MessageFormat = "§7[{8}:{9}:{10}] [{1} §9{0}§7] §f{2}"
+            MessageFormat = "§7[{5:HH}:{5:mm}:{5:ss}] [{1} §9{0}§7] §f{2}"
         };
         private static readonly ILogger Logger = LoggerProvider.CreateLogger("Core");
         static async Task<int> Main(string[] args)

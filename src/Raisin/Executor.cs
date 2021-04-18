@@ -10,6 +10,7 @@ using Microsoft.CodeAnalysis.Scripting;
 using Microsoft.Extensions.Logging;
 using Raisin.Core;
 using Raisin.PluginSystem;
+using Ultz.Extensions.Logging;
 
 namespace Raisin
 {
@@ -19,12 +20,14 @@ namespace Raisin
         {
             "System",
             "System.Collections.Generic",
+            "System.Collections.Concurrent",
             "System.Linq",
             "System.Text",
             "System.Diagnostics",
             "System.IO",
             "System.Threading",
             "System.Threading.Tasks",
+            "Microsoft.Extensions.Logging",
             "Raisin.Core"
         };
         public static async Task RunAsync(string inputFile)
@@ -50,7 +53,7 @@ namespace Raisin
                     .Where(x => !x.IsDynamic && !string.IsNullOrWhiteSpace(x.Location)));
             try
             {
-                logger.LogInformation("Executing generation script...");
+                logger.LogInformation("Collecting...");
                 var result = await CSharpScript.EvaluateAsync(code, sopts);
                 if (result is not Func<RaisinEngine, Task> @delegate)
                 {
@@ -61,7 +64,7 @@ namespace Raisin
                 logger.LogInformation("Generation started.");
                 var sw = Stopwatch.StartNew();
                 await @delegate(new RaisinEngine().WithLoggerProvider(Program.LoggerProvider));
-                logger.LogInformation($"Generation finished in {sw.Elapsed.Seconds} seconds.");
+                logger.LogInformation($"Generation finished in {sw.Elapsed.TotalSeconds:R} seconds.");
             }
             catch (CompilationErrorException e)
             {

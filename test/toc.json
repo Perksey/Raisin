@@ -1,0 +1,18 @@
+{
+    "Name": "My Cool Website",
+    "Url": "index.md",
+    "Children": [
+    {
+        "Name": "Page 1",
+        "Url": "page1.md"
+    },
+    {
+        "Name": "Page 2",
+        "Url": "page2.md"
+    },
+    {
+        "Name": "Subfolder 1",
+        "Url": "::subfolder1/toc.json"
+    }
+    ]
+}

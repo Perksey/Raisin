@@ -53,7 +53,6 @@ namespace Raisin.Core
         /// <param name="model">The model to compile the Razor root using.</param>
         /// <returns>HTML bytes.</returns>
         public async Task<byte[]> BuildFileAsync(object model)
-            => Encoding.UTF8.GetBytes(await Razor.Value.CompileRenderAsync(Raisin.RazorRoot, model,
-                new {RazorEngine = this}.ToExpando()));
+            => Encoding.UTF8.GetBytes(await Razor.Value.CompileRenderAsync(Raisin.RazorRoot, model));
     }
 }
