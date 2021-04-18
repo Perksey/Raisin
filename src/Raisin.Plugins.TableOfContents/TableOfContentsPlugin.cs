@@ -223,18 +223,18 @@ namespace Raisin.Plugins.TableOfContents
                     tmpLoadedModels++;
 
                     // get all ToC entries
-                    var ret = Walk(model!, tocBasePath, file, model!).Select(y => (x.Value.Item1, y)).ToArray();
+                    var thisRet = Walk(model!, tocBasePath, file, model!).Select(y => (x.Value.Item1, y)).ToArray();
 
-                    if (ret.Length == 0)
+                    if (thisRet.Length == 0)
                     {
                         logger?.LogWarning($"Failed to walk! File: \"{file}\"");
                     }
 
                     // make all the Parent properties work
-                    CreateParentReferences(ret.Select(y => y.y.RootModel));
+                    CreateParentReferences(thisRet.Select(y => y.y.RootModel));
 
                     // we're done!
-                    return ret;
+                    return thisRet;
                 }).Select(x => (OriginalToCFile: x.Item1, Value: x.y)).ToArray();
             loadedModels += tmpLoadedModels;
             return ret;
@@ -476,10 +476,6 @@ namespace Raisin.Plugins.TableOfContents
                     yield return walked;
                 }
             }
-        }
-
-        private static void MakeUrlsAbsoluteWithLeadingSlash()
-        {
         }
 
         private static void CreateParentReferences

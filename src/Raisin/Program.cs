@@ -10,7 +10,7 @@ namespace Raisin
 {
     class Program
     {
-        internal static ILoggerProvider LoggerProvider = new UltzLoggerProvider
+        internal static UltzLoggerProvider LoggerProvider = new UltzLoggerProvider
         {
             MessageFormat = "§7[{5:HH}:{5:mm}:{5:ss}] [{1} §9{0}§7] §f{2}"
         };
@@ -27,7 +27,7 @@ namespace Raisin
             }
             
             await Executor.RunAsync(args[0]);
-            Thread.Sleep(1000); // TODO fix upstream
+            LoggerProvider.WaitAndShutdown();
         }
     }
 }

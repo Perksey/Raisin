@@ -11,7 +11,7 @@ namespace Tallinn
 {
     class Program
     {
-        internal static ILoggerProvider LoggerProvider = new UltzLoggerProvider
+        internal static UltzLoggerProvider LoggerProvider = new UltzLoggerProvider
         {
             MessageFormat = "§7[{5:HH}:{5:mm}:{5:ss}] [{1} §9{0}§7] §f{2}"
         };
@@ -40,7 +40,7 @@ namespace Tallinn
             rootCommand.Handler = CommandHandler.Create<FileInfo, FileInfo>(Generator.CommandHandler);
 
             var ret = await rootCommand.InvokeAsync(args);
-            Thread.Sleep(100); // TODO fix threading issues upstream
+            LoggerProvider.WaitAndShutdown();
             return ret;
         }
     }

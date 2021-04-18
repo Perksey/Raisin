@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text.Json.Serialization;
+using Raisin.Core;
 
 namespace Raisin.Plugins.TableOfContents
 {
@@ -19,6 +21,18 @@ namespace Raisin.Plugins.TableOfContents
         [JsonInclude]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public string? Url { get; internal set; }
+
+        /// <summary>
+        /// The URL to the file referenced in the table of contents, relative to the input directory.
+        /// </summary>
+        [JsonIgnore]
+        public string? FullUrl => Url is not null ? Path.Combine(TocBasePath, Url).PathFixup() : null;
+
+        /// <summary>
+        /// The value, usable in the HTML href attribute, of this ToC element.
+        /// </summary>
+        [JsonIgnore]
+        public string? Href => FullUrl is null ? null : "/" + FullUrl;
 
         /// <summary>
         /// The elements beneath this element in the table of contents.

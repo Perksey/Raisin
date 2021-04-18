@@ -16,7 +16,7 @@ void EnumerateChildren(IEnumerable<TableOfContentsElement> roots)
 {
     foreach (var value in roots)
     {
-        logger?.LogDebug(new string(' ', indentationLevel * 4) + value.Name + " (" + value.Url + ", parent " + value.Parent?.Url + ")");
+        logger?.LogDebug(new string(' ', indentationLevel * 4) + value.Name + " (" + value.Href + ", parent " + value.Parent?.Href + ")");
         indentationLevel++;
         EnumerateChildren(value.Children ?? Enumerable.Empty<TableOfContentsElement>());
         indentationLevel--;
