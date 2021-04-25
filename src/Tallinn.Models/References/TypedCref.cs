@@ -1,6 +1,6 @@
-namespace Tallinn.Models.Textual
+namespace Tallinn.Models.References
 {
-    public class TypedCref : Cref<TypeDocumentation>
+    public sealed class TypedCref : Cref
     {
         public int IndirectionLevels { get; set; }
         public TypedCrefFlags Flags { get; set; }

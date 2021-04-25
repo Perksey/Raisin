@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Tallinn.Models
+namespace Tallinn.Models.References
 {
     [Flags]
     public enum TypedCrefFlags
