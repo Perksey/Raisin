@@ -32,7 +32,7 @@ namespace Raisin.Plugins.Markdown
                     (
                         Path.Combine(Path.GetDirectoryName(src) ?? ".", Path.GetFileNameWithoutExtension(src) + ".html")
                             .PathFixup(),
-                        (object) new HtmlModel
+                        (BaseModel) new HtmlModel
                         {
                             Html = Markdig.Markdown.ToHtml(await File.ReadAllTextAsync(Path.Combine(
                                 current.InputDirectory ??

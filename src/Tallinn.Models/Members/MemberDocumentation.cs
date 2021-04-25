@@ -1,9 +1,10 @@
 using System.Collections.Generic;
+using Tallinn.Models.References;
 using Tallinn.Models.Textual;
 
-namespace Tallinn.Models
+namespace Tallinn.Models.Members
 {
-    public class MemberDocumentation : BaseXmlDocumentation
+    public abstract class MemberDocumentation : BaseXmlDocumentation
     {
         public string Name { get; set; }
         public override ITextualDocumentation? Summary { get; set; }
@@ -19,13 +20,5 @@ namespace Tallinn.Models
         /// </list>
         /// </summary>
         public override List<string> DeclarationLines { get; set; }
-    }
-
-    public class FieldDocumentation : MemberDocumentation
-    {
-    }
-
-    public class PropertyDocumentation : MemberDocumentation
-    {
     }
 }

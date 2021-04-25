@@ -1,9 +1,11 @@
-﻿namespace Raisin.Plugins.TableOfContents
+﻿using Raisin.Core;
+
+namespace Raisin.Plugins.TableOfContents
 {
-    public class TableOfContentsModel
+    public class TableOfContentsModel : BaseModel
     {
-        public TableOfContentsElement TocRoot { get; internal set; }
-        public TableOfContentsElement TocNode { get; internal set; }
-        public object BaseModel { get; internal set; }
+        public TableOfContentsElement Root { get; internal set; }
+        public TableOfContentsElement Node { get; internal set; }
+        public BaseModel BaseModel { get; internal set; }
     }
 }

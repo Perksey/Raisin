@@ -1,14 +1,14 @@
 {
     "Name": "My Cool Website",
-    "Url": "index.md",
+    "Url": "index.html",
     "Children": [
     {
         "Name": "Page 1",
-        "Url": "page1.md"
+        "Url": "page1.html"
     },
     {
         "Name": "Page 2",
-        "Url": "page2.md"
+        "Url": "page2.html"
     },
     {
         "Name": "Subfolder 1",

@@ -2,7 +2,7 @@ using System.Collections.Immutable;
 
 namespace Raisin.Core
 {
-    public readonly struct HtmlModel
+    public class HtmlModel : BaseModel
     {
         public string Html { get; init; }
     }

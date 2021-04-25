@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using Tallinn.Models.Textual;
 
-namespace Tallinn.Models
+namespace Tallinn.Models.References
 {
     public abstract class BaseXmlDocumentation
     {

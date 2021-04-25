@@ -1,14 +1,14 @@
 {
     "Name": "Subfolder 1",
-    "Url": "index.md",
+    "Url": "index.html",
     "Children": [
     {
         "Name": "Page 4",
-        "Url": "page4.md"
+        "Url": "page4.html"
     },
     {
         "Name": "Page 5",
-        "Url": "page5.md"
+        "Url": "page5.html"
     }
     ]
 }

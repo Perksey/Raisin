@@ -58,16 +58,5 @@ namespace Tallinn.Visitors
 
             return ret;
         }
-
-        public TypeDocumentation GetType(string ns, string name)
-        {
-            var retrieved = GetNamespace(ns).GetOrCreateType(name, out var ret);
-            if (retrieved == RetrievalResult.Created)
-            {
-                ret.TypeName = name;
-            }
-
-            return ret;
-        }
     }
 }

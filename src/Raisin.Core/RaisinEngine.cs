@@ -55,7 +55,7 @@ namespace Raisin.Core
         /// <remarks>
         /// This should only be populated using the With methods.
         /// </remarks>
-        public ConcurrentStack<Func<string, (string OutputPath, object OriginalModel), Task<object>>> ModelOverrides
+        public ConcurrentStack<Func<string, (string OutputPath, BaseModel OriginalModel), Task<BaseModel>>> ModelOverrides
         {
             get;
         } = new();
@@ -135,7 +135,7 @@ namespace Raisin.Core
         /// <param name="generator">The output Razor model generator to use.</param>
         /// <returns>This instance, for chaining purposes.</returns>
         public RaisinEngine WithRazorGenerator(string glob,
-            Func<string, Task<IEnumerable<(string OutputPath, object Model)>>> generator)
+            Func<string, Task<IEnumerable<(string OutputPath, BaseModel Model)>>> generator)
         {
             var matcher = CreateGlobMatcher();
             matcher.AddInclude(glob);
@@ -164,7 +164,7 @@ namespace Raisin.Core
 
             return this;
 
-            async Task<IEnumerable<(string OutputPath, object Model)>> RunGeneratorAsync(string rel)
+            async Task<IEnumerable<(string OutputPath, BaseModel Model)>> RunGeneratorAsync(string rel)
             {
                 var result = (await generator(rel)).Select(x => (OutputPath: x.OutputPath.PathFixup(), x.Model));
                 // ReSharper disable once LoopCanBeConvertedToQuery
@@ -184,7 +184,7 @@ namespace Raisin.Core
         /// <param name="modelOverride">The function that overrides Razor models used for generating output.</param>
         /// <returns>This instance, for chaining purposes.</returns>
         public RaisinEngine WithRazorModelOverride(
-            Func<string, (string OutputPath, object OriginalModel), Task<object>> modelOverride)
+            Func<string, (string OutputPath, BaseModel OriginalModel), Task<BaseModel>> modelOverride)
         {
             ModelOverrides.Push(modelOverride);
             return this;

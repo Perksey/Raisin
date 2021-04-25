@@ -1,6 +1,61 @@
 @using RazorLight
 @using Raisin.Core
+@using Raisin.Plugins.TableOfContents
+@using System.Linq
+@using Microsoft.Extensions.Logging
 @inherits TemplatePage<object>
+
+@if (Model is TableOfContentsModel tocModel)
+{
+    string RenderToC(TableOfContentsElement element, ILogger? logger)
+    {
+        var str = string.Empty;
+        str += "<li>";
+        if (element.Url is not null)
+        {
+            str += $"<a href=\"{element.Href}\">";
+        }
+
+        if (element.IsActive || element.IsAnyChildActive)
+        {
+            str += "<strong>";
+        }
+
+        str += element.Name;
+
+        if (element.IsActive || element.IsAnyChildActive)
+        {
+            str += "</strong>";
+        }
+
+        if (element.Children is not null && element.Children.Any())
+        {
+            str += "<ul>";
+             
+            foreach (var child in element.Children)
+            {
+                str += RenderToC(child, logger);
+            }
+            
+            str += "</ul>";
+        }
+
+        if (element.Url is not null)
+        {
+            str += "</a>";
+        }
+
+        str += "</li>";
+        return str;
+    }
+
+    <ul>
+     @Raw(RenderToC(tocModel.Root, tocModel.Raisin.GetLoggerOrDefault("Theme")))
+     @{
+        Model = tocModel.BaseModel;
+    }
+</ul>
+}
 
 @if (Model is HtmlModel html)
 {

@@ -160,29 +160,35 @@ namespace Raisin.Plugins.TableOfContents
                 logger?.LogWarning("Failed to register some inter-plugin state, interoperability between the ToC " +
                                    "plugin and other plugins may not work as expected.");
             }
-
-            logger?.LogInformation("Plugin enabled.");
+            else
+            {
+                logger?.LogInformation("Plugin enabled.");
+            }
 
             return engine.WithRazorModelOverride((srcRel, @base) =>
             {
                 var (dstRel, baseModel) = @base;
                 // if we have a ToC model for the relative source or destination path, get it.
-                if (!tocModels.TryGetValue(srcRel, out var val) && !tocModels.TryGetValue(dstRel, out val))
+                if (!tocModels.TryGetValue(engine.MaybeUpper(srcRel), out var val) &&
+                    !tocModels.TryGetValue(engine.MaybeUpper(dstRel), out val))
                 {
                     return Task.FromResult(baseModel);
                 }
 
                 // deep clone the model we've found just in case the razor page decides to mess with it.
                 val = Clone(val);
+                
+                // set it to active
+                val.Value.IsActive = true;
 
                 // create the overriding model
-                return Task.FromResult<object>
+                return Task.FromResult<BaseModel>
                 (
                     new TableOfContentsModel
                     {
                         BaseModel = baseModel,
-                        TocNode = val.Value,
-                        TocRoot = val.Root
+                        Node = val.Value,
+                        Root = val.Root
                     }
                 );
             });
@@ -465,7 +471,8 @@ namespace Raisin.Plugins.TableOfContents
             child.TocFile = tocFile;
             if (child.Url is not null)
             {
-                yield return ($"{tocBasePath.PathFixup()}/{child.Url}".PathFixup(), root!, child);
+                child.FullUrl = $"{tocBasePath.PathFixup()}/{child.Url}".PathFixup();
+                yield return (child.FullUrl, root!, child);
             }
 
             // recurse for children
@@ -514,16 +521,8 @@ namespace Raisin.Plugins.TableOfContents
             {
                 Name = element.Name,
                 Url = element.Url,
-                Children = element.Children?.Select(x =>
-                {
-                    var thisRet = CoreClone(x, lookForValue, ref tempValue);
-                    if (x == lookForValue)
-                    {
-                        tempValue = thisRet;
-                    }
-
-                    return thisRet;
-                }).ToList(),
+                FullUrl = element.FullUrl,
+                Children = element.Children?.Select(x => CoreClone(x, lookForValue, ref tempValue)).ToList(),
                 Metadata = element.Metadata?.ToDictionary(x => x.Key, x => x.Value),
                 IsActive = false,
                 TocBasePath = element.TocBasePath,
@@ -533,6 +532,11 @@ namespace Raisin.Plugins.TableOfContents
             foreach (var elem in ret.Children ?? Enumerable.Empty<TableOfContentsElement>())
             {
                 elem.Parent = ret;
+            }
+
+            if (element == lookForValue)
+            {
+                value ??= ret;
             }
 
             value ??= tempValue;

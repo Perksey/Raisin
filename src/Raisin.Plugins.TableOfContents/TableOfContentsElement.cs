@@ -26,7 +26,7 @@ namespace Raisin.Plugins.TableOfContents
         /// The URL to the file referenced in the table of contents, relative to the input directory.
         /// </summary>
         [JsonIgnore]
-        public string? FullUrl => Url is not null ? Path.Combine(TocBasePath, Url).PathFixup() : null;
+        public string? FullUrl { get; internal set; }
 
         /// <summary>
         /// The value, usable in the HTML href attribute, of this ToC element.

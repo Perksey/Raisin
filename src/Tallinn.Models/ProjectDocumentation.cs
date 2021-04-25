@@ -2,7 +2,7 @@ using System.Collections.Concurrent;
 
 namespace Tallinn.Models
 {
-    public class ProjectDocumentation
+    public sealed class ProjectDocumentation
     {
         public string Name { get; set; }
         public string AssemblyName { get; set; }
@@ -16,7 +16,7 @@ namespace Tallinn.Models
             result = Namespaces.GetOrAdd(name, _ =>
             {
                 ret = RetrievalResult.Created;
-                return new NamespaceDocumentation();
+                return new();
             });
             
             return ret;

@@ -1,9 +1,9 @@
 using System.Collections.Generic;
-using Tallinn.Models.Textual;
+using Tallinn.Models.References;
 
-namespace Tallinn.Models
+namespace Tallinn.Models.Types
 {
-    public class ClassDocumentation : MemberedTypeDocumentation
+    public sealed class ClassDocumentation : MemberedTypeDocumentation
     {
         public List<Cref> Heirarchy { get; set; }
         public List<Cref> Implements { get; set; }
