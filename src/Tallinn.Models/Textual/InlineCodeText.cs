@@ -4,6 +4,6 @@ namespace Tallinn.Models.Textual
 {
     public sealed class InlineCodeText : ITextualDocumentation
     {
-        public List<ITextualDocumentation>? Children { get; set; }
+        public List<ITextualDocumentation> Children { get; set; } = new();
     }
 }

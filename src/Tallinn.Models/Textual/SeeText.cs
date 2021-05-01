@@ -7,6 +7,6 @@ namespace Tallinn.Models.Textual
     {
         public Cref? Cref { get; set; }
         public string? Href { get; set; }
-        public List<ITextualDocumentation>? Children { get; set; }
+        public List<ITextualDocumentation> Children { get; set; } = new();
     }
 }

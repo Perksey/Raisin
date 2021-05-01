@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using Tallinn.Models.Textual;
@@ -8,9 +9,9 @@ namespace Tallinn.Models.Members
     {
         public override ITextualDocumentation? Summary { get; set; }
         public override ITextualDocumentation? Remarks { get; set; }
-        public override List<ITextualDocumentation?> SeeAlso { get; set; }
-        public override List<ITextualDocumentation?> Examples { get; set; }
-        public ImmutableDictionary<string, ITextualDocumentation?> TypeParameters { get; set; }
+        public override List<ITextualDocumentation?> SeeAlso { get; set; } = new();
+        public override List<ITextualDocumentation?> Examples { get; set; } = new();
+        public ConcurrentDictionary<string, ITextualDocumentation?> TypeParameters { get; set; } = new();
 
         /// <summary>
         /// Lines of C# code representing:
@@ -21,8 +22,9 @@ namespace Tallinn.Models.Members
         /// <item>Generic type parameter constraints</item>
         /// </list>
         /// </summary>
-        public override List<string> DeclarationLines { get; set; }
-        public ImmutableDictionary<string, ITextualDocumentation?> Parameters { get; set; }
+        public override List<string> DeclarationLines { get; set; } = new();
+
+        public ConcurrentDictionary<string, ITextualDocumentation?> Parameters { get; set; } = new();
         public ITextualDocumentation? Returns { get; set; }
     }
 }

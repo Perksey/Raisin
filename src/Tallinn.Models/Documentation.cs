@@ -7,7 +7,7 @@ namespace Tallinn.Models
 {
     public sealed class Documentation
     {
-        public string Name { get; set; }
+        public string? Name { get; set; }
         public ConcurrentDictionary<string, ProjectDocumentation> Projects { get; set; } = new();
         public RetrievalResult GetOrCreateProject(string name, out ProjectDocumentation result)
         {
@@ -15,7 +15,7 @@ namespace Tallinn.Models
             result = Projects.GetOrAdd(name, _ =>
             {
                 ret = RetrievalResult.Created;
-                return new ProjectDocumentation();
+                return new() {Name = name};
             });
             
             return ret;

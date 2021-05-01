@@ -4,10 +4,10 @@ namespace Tallinn.Models
 {
     public sealed class ProjectDocumentation
     {
-        public string Name { get; set; }
-        public string AssemblyName { get; set; }
-        public string PackageId { get; set; }
-        public string Description { get; set; }
+        public string? Name { get; set; }
+        public string? AssemblyName { get; set; }
+        public string? PackageId { get; set; }
+        public string? Description { get; set; }
         public ConcurrentDictionary<string, NamespaceDocumentation> Namespaces { get; set; } = new();
 
         public RetrievalResult GetOrCreateNamespace(string name, out NamespaceDocumentation result)
@@ -16,7 +16,7 @@ namespace Tallinn.Models
             result = Namespaces.GetOrAdd(name, _ =>
             {
                 ret = RetrievalResult.Created;
-                return new();
+                return new(){Namespace = name};
             });
             
             return ret;

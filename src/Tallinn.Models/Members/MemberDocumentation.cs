@@ -6,11 +6,11 @@ namespace Tallinn.Models.Members
 {
     public abstract class MemberDocumentation : BaseXmlDocumentation
     {
-        public string Name { get; set; }
+        public string? Name { get; set; }
         public override ITextualDocumentation? Summary { get; set; }
         public override ITextualDocumentation? Remarks { get; set; }
-        public override List<ITextualDocumentation?> SeeAlso { get; set; }
-        public override List<ITextualDocumentation?> Examples { get; set; }
+        public override List<ITextualDocumentation?> SeeAlso { get; set; } = new();
+        public override List<ITextualDocumentation?> Examples { get; set; } = new();
 
         /// <summary>
         /// Lines of C# code representing:
@@ -19,6 +19,6 @@ namespace Tallinn.Models.Members
         /// <item>The member declaration line</item>
         /// </list>
         /// </summary>
-        public override List<string> DeclarationLines { get; set; }
+        public override List<string> DeclarationLines { get; set; } = new();
     }
 }

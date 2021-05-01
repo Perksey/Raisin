@@ -3,6 +3,7 @@
     public enum RetrievalResult
     {
         Existed,
-        Created
+        Created,
+        ErrorExistedTypeMismatch
     }
 }

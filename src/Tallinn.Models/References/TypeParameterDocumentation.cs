@@ -5,7 +5,8 @@ namespace Tallinn.Models.References
 {
     public sealed class TypeParameterDocumentation
     {
-        public List<string> Constraints { get; set; }
+        public int Index { get; set; }
+        public List<string> Constraints { get; set; } = new();
         public ITextualDocumentation? Documentation { get; set; }
     }
 }

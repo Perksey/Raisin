@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 namespace Tallinn.Models.Textual
 {
-    public sealed class ItemText : ITextualDocumentation
+    public sealed class ListHeaderText : ITextualDocumentation
     {
         public List<ITextualDocumentation> Children { get; set; } = new();
     }

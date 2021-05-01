@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
@@ -8,13 +9,13 @@ namespace Tallinn.Models.Types
 {
     public abstract class TypeDocumentation : BaseXmlDocumentation
     {
-        public string TypeName { get; set; }
+        public string? TypeName { get; set; }
         public Accessibility Access { get; set; }
         public override ITextualDocumentation? Summary { get; set; }
         public override ITextualDocumentation? Remarks { get; set; }
-        public override List<ITextualDocumentation?> SeeAlso { get; set; }
-        public override List<ITextualDocumentation?> Examples { get; set; }
-        public ImmutableDictionary<string, TypeParameterDocumentation> TypeParameters { get; set; }
+        public override List<ITextualDocumentation?> SeeAlso { get; set; } = new();
+        public override List<ITextualDocumentation?> Examples { get; set; } = new();
+        public ConcurrentDictionary<string, TypeParameterDocumentation> TypeParameters { get; set; } = new();
 
         /// <summary>
         /// Lines of C# code representing:
@@ -24,6 +25,6 @@ namespace Tallinn.Models.Types
         /// <item>Generic type parameter constraints</item>
         /// </list>
         /// </summary>
-        public override List<string> DeclarationLines { get; set; }
+        public override List<string> DeclarationLines { get; set; } = new();
     }
 }
