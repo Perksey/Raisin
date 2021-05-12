@@ -221,34 +221,6 @@ namespace Raisin.Core
         }
 
         /// <summary>
-        /// Registers CSHTML files matched by the given glob expressions as <see cref="HtmlModel"/>s, such that they use
-        /// the theme while also maintaining control over the output HTML.
-        /// </summary>
-        /// <param name="globs"></param>
-        /// <returns></returns>
-        public RaisinEngine WithInnerRazor(params string[] globs)
-        {
-            var excludes = globs.Where(x => x.StartsWith("!")).ToArray();
-            return globs.Where(static x => !x.StartsWith("!")).Aggregate
-            (
-                this,
-                (current, glob) => current.WithRazorGenerator
-                (
-                    glob,
-                    async src =>
-                    (
-                        Path.Combine(Path.GetDirectoryName(src) ?? ".", Path.GetFileNameWithoutExtension(src) + ".html")
-                            .PathFixup(),
-                        (BaseModel) new InnerRazorModel(Razor.Value, await File.ReadAllTextAsync(Path.Combine(
-                            current.InputDirectory ??
-                            throw new InvalidOperationException("No input directory provided."), src)))
-                    ).EnumerateOne(),
-                    excludes
-                )
-            );
-        }
-
-        /// <summary>
         /// Registers a function which, given a source file path (relative to the <see cref="InputDirectory"/>),
         /// desired output path and base model; wraps and/or overrides the Razor model used in output files.
         /// </summary>
