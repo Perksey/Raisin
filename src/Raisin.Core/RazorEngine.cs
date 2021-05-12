@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Dynamic;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Logging;
 using RazorLight;
 using RazorLight.Extensions;
@@ -41,6 +43,8 @@ namespace Raisin.Core
                 var ret = new RazorLightEngineBuilder()
                     .UseFileSystemProject(Raisin.InputDirectory)
                     .UseMemoryCachingProvider()
+                    .AddMetadataReferences(Raisin.RazorMetadataReferences
+                        .Select(x => (MetadataReference) MetadataReference.CreateFromFile(x.Location)).ToArray())
                     .Build();
                 Logger?.LogInformation("Created Razor Light engine.");
                 return ret;
@@ -52,10 +56,26 @@ namespace Raisin.Core
         /// </summary>
         /// <param name="model">The model to compile the Razor root using.</param>
         /// <returns>HTML bytes.</returns>
-        public async Task<byte[]> BuildFileAsync(BaseModel model)
+        public async Task<byte[]> BuildFileAsync(BaseModel model, string outputPath)
         {
             model.Razor = this;
-            return Encoding.UTF8.GetBytes(await Razor.Value.CompileRenderAsync(Raisin.RazorRoot, model));
+            model.DestinationRel = outputPath;
+            return Encoding.UTF8.GetBytes(
+                await RenderAsync(Raisin.RazorRoot ?? throw new InvalidOperationException("No Razor root exists."),
+                    model));
+        }
+
+        internal async Task<string> RenderAsync(string file, object model)
+        {
+            try
+            {
+                return await Razor.Value.CompileRenderAsync(file, model);
+            }
+            catch
+            {
+                Logger?.LogError($"Rendering failed for \"{file}\".");
+                throw;
+            }
         }
     }
 }

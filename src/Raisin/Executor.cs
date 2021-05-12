@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.Loader;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Scripting;
@@ -30,6 +31,13 @@ namespace Raisin
             "Microsoft.Extensions.Logging",
             "Raisin.Core"
         };
+
+        private static readonly string[] _bundledPluginDirectives =
+        {
+            "#reference Raisin.Plugins.Markdown",
+            "#reference Raisin.Plugins.TableOfContents"
+        };
+
         public static async Task RunAsync(string inputFile)
         {
             if (inputFile is null || !File.Exists(inputFile))
@@ -37,20 +45,28 @@ namespace Raisin
                 throw new ArgumentNullException(nameof(inputFile), "File parameter is null or does not exist.");
             }
 
-            var code = "public static async Task Script(RaisinEngine Raisin)\n{\n" +
-                       await File.ReadAllTextAsync(inputFile) + "\n}\nreturn (Func<RaisinEngine, Task>) Script;";
+            var codeLines = ("public static async Task Script(RaisinEngine Raisin)\n{\n" +
+                             await File.ReadAllTextAsync(inputFile) +
+                             "\n}\nreturn (Func<RaisinEngine, Task>) Script;").Split('\n');
+            var code = string.Join('\n', codeLines.Where(x => !x.StartsWith("#")));
+            var directives = _bundledPluginDirectives.Concat(codeLines.Where(x => x.StartsWith("#")));
+            var restoreEnv = Environment.CurrentDirectory;
             Environment.CurrentDirectory = Path.GetDirectoryName(Path.GetFullPath(inputFile)!)!;
             var logger = Program.LoggerProvider.CreateLogger("Executor");
-            var userFacingNamespaces = PluginLoader.LoadAndEnumerateUserFacingNamespaces(() => new[]
-            {
-                new SavedPlugin {Name = "Raisin.Plugins.Markdown", Version = Program.Version, RaisinVersion = Program.Version},
-                new SavedPlugin {Name = "Raisin.Plugins.TableOfContents", Version = Program.Version, RaisinVersion = Program.Version},
-            }, x => Assembly.Load(x.Name), Program.LoggerProvider);
+            var userFacingNamespaces = await PluginLoader.LoadAndEnumerateUserFacingNamespacesAsync(
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Raisin"),
+                directives, Program.LoggerProvider).ToArrayAsync();
+
+            var assemblies = AppDomain.CurrentDomain.GetAssemblies()
+                .Where(x => !x.IsDynamic && !string.IsNullOrWhiteSpace(x.Location))
+                .Concat(AssemblyLoadContext.Default.Assemblies.Where(x =>
+                    !x.IsDynamic && !string.IsNullOrWhiteSpace(x.Location)))
+                .Distinct()
+                .ToArray();
 
             var sopts = ScriptOptions.Default
                 .WithImports(_defaultImports.Concat(userFacingNamespaces).ToArray())
-                .WithReferences(AppDomain.CurrentDomain.GetAssemblies()
-                    .Where(x => !x.IsDynamic && !string.IsNullOrWhiteSpace(x.Location)));
+                .WithReferences(assemblies);
             try
             {
                 logger.LogInformation("Collecting...");
@@ -60,10 +76,11 @@ namespace Raisin
                     logger.LogError("Unknown error (result is not Func<RaisinEngine, Task>)");
                     return;
                 }
-                
+
                 logger.LogInformation("Generation started.");
                 var sw = Stopwatch.StartNew();
-                await @delegate(new RaisinEngine().WithLoggerProvider(Program.LoggerProvider));
+                await @delegate(new RaisinEngine().WithLoggerProvider(Program.LoggerProvider)
+                    .WithRazorMetadataReferences(assemblies));
                 logger.LogInformation($"Generation finished in {sw.Elapsed.TotalSeconds:R} seconds.");
             }
             catch (CompilationErrorException e)
@@ -94,8 +111,11 @@ namespace Raisin
             }
             catch (Exception e)
             {
-                // TODO reminder for a breaking change upstream to move the formatter delegate invocation
                 logger.LogError(e, $"Generation failed. {e}");
+            }
+            finally
+            {
+                Environment.CurrentDirectory = restoreEnv;
             }
         }
     }

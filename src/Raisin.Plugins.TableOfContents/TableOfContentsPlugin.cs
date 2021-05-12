@@ -18,7 +18,7 @@ namespace Raisin.Plugins.TableOfContents
 {
     public static class TableOfContentsPlugin
     {
-        private const string TocDict = nameof(Raisin) +
+        internal const string TocDict = nameof(Raisin) +
                                        "." +
                                        nameof(Plugins) +
                                        "." +
@@ -177,7 +177,7 @@ namespace Raisin.Plugins.TableOfContents
 
                 // deep clone the model we've found just in case the razor page decides to mess with it.
                 val = Clone(val);
-                
+
                 // set it to active
                 val.Value.IsActive = true;
 
@@ -316,8 +316,9 @@ namespace Raisin.Plugins.TableOfContents
             // Second pass resolve fragmented models (that are linked together using ::path/to/inner/toc.json)
             var includedToCs = new Dictionary<string, string>(); // key: tocFile, value: file that includes the tocFile
             foreach (var (tocFile, actualTocFileName) in wip
-                .Select(x => (engine.GetMaybeUpperSrcRel(x.Value.OriginalToCFile)!.PathFixup(), x.Value.OriginalToCFile))
-                .DistinctBy(x=> x.Item1))
+                .Select(x => (engine.GetMaybeUpperSrcRel(x.Value.OriginalToCFile)!.PathFixup(),
+                    x.Value.OriginalToCFile))
+                .DistinctBy(x => x.Item1))
             {
                 foreach (var (key, value) in wip)
                 {
@@ -336,8 +337,9 @@ namespace Raisin.Plugins.TableOfContents
                     {
                         continue;
                     }
-                    
-                    var ncsF = $"{value.Value.TocBasePath}/{rawNcsVal[2..]}".PathFixup();
+
+                    var ncsF = engine.GetMaybeUpperSrcRel(Path.Combine(value.Value.TocBasePath, rawNcsVal[2..]))!
+                        .PathFixup();
                     var muNcsF = engine.MaybeUpper(ncsF);
                     if (!muNcsF.Equals(tocFile))
                     {
@@ -389,7 +391,7 @@ namespace Raisin.Plugins.TableOfContents
 
                         break;
                     }
-                        
+
                     // if we haven't actually loaded the included ToC even after 2 passes, gloss over this as we
                     // should've removed the ToC inclusion in the second pass of the referencedToCRoot resolution.
                     if (referencedToCRoot.Key is null! && referencedToCRoot.Value == default)
@@ -425,6 +427,7 @@ namespace Raisin.Plugins.TableOfContents
                     // - wip[key], which is the ToC element that contains the include.
                     // - referencedToCRoot, which is the root element of the ToC we're trying to include
                     var parent = wip[key].Value.Parent;
+                    var indexOfThisElement = parent?.Children?.IndexOf(wip[key].Value);
                     if (!(parent?.Children?.Remove(wip[key].Value) ?? true))
                     {
                         logger?.LogWarning("Failed to disown child.");
@@ -435,11 +438,19 @@ namespace Raisin.Plugins.TableOfContents
                     // set the included ToC's parent to the including ToC
                     referencedToCRoot.Value.Root.Parent = parent;
                     // add the included ToC as a child to the including ToC
-                    parent?.Children?.Add(referencedToCRoot.Value.Root);
+                    if (indexOfThisElement is not null)
+                    {
+                        parent?.Children?.Insert(indexOfThisElement.Value, referencedToCRoot.Value.Root);
+                    }
+                    else
+                    {
+                        parent?.Children?.Add(referencedToCRoot.Value.Root);
+                    }
+
                     // remove the ToC inclusion from the ToC model now that the other models are in there
                     if (!wip.Remove(key))
                     {
-                        logger?.LogWarning("Failed to add to ToC tree! The tree is now in an undefined state.");
+                        logger?.LogWarning("Failed to remove from ToC tree! The tree is now in an undefined state.");
                     }
 
                     // replace all elements referencing the included ToC as the root
@@ -471,8 +482,16 @@ namespace Raisin.Plugins.TableOfContents
             child.TocFile = tocFile;
             if (child.Url is not null)
             {
-                child.FullUrl = $"{tocBasePath.PathFixup()}/{child.Url}".PathFixup();
-                yield return (child.FullUrl, root!, child);
+                if (child.Url.StartsWith(">>"))
+                {
+                    child.Url = child.Url[2..];
+                    child.FullUrl = $"{tocBasePath.PathFixup()}/{child.Url}".PathFixup();
+                }
+                else
+                {
+                    child.FullUrl = $"{tocBasePath.PathFixup()}/{child.Url}".PathFixup();
+                    yield return (child.FullUrl, root!, child);
+                }
             }
 
             // recurse for children
@@ -523,7 +542,7 @@ namespace Raisin.Plugins.TableOfContents
                 Url = element.Url,
                 FullUrl = element.FullUrl,
                 Children = element.Children?.Select(x => CoreClone(x, lookForValue, ref tempValue)).ToList(),
-                Metadata = element.Metadata?.ToDictionary(x => x.Key, x => x.Value),
+                Metadata = element.Metadata?.ToDictionary(static x => x.Key, static x => x.Value),
                 IsActive = false,
                 TocBasePath = element.TocBasePath,
                 TocFile = element.TocFile

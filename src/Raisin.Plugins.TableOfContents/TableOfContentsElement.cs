@@ -29,7 +29,7 @@ namespace Raisin.Plugins.TableOfContents
         public string? FullUrl { get; internal set; }
 
         /// <summary>
-        /// The value, usable in the HTML href attribute, of this ToC element.
+        /// The value, usable in the HTML href attribute (unless relativity matters), of this ToC element.
         /// </summary>
         [JsonIgnore]
         public string? Href => FullUrl is null ? null : "/" + FullUrl;
@@ -77,6 +77,28 @@ namespace Raisin.Plugins.TableOfContents
         /// </remarks>
         [JsonIgnore]
         public bool IsAnyChildActive => Children?.Any(static x => x.IsActive || x.IsAnyChildActive) ?? false;
+
+        public IEnumerable<TableOfContentsElement> Ancestors
+        {
+            get
+            {
+                static IEnumerable<TableOfContentsElement> GetAncestorsThisFirst(TableOfContentsElement @this)
+                {
+                    var currentNode = @this;
+                    while (currentNode is not null)
+                    {
+                        if (currentNode != @this)
+                        {
+                            yield return currentNode;
+                        }
+
+                        currentNode = currentNode.Parent;
+                    }
+                }
+
+                return GetAncestorsThisFirst(this).Reverse();
+            }
+        }
         
         [JsonIgnore]
         internal string TocBasePath { get; set; }

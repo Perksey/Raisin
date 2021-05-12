@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.FileSystemGlobbing;
@@ -66,6 +67,11 @@ namespace Raisin.Core
         /// plugins. This could be achieved by prepending state IDs with your plugin's namespace, for example.
         /// </summary>
         public ConcurrentDictionary<string, object> InterPluginState { get; } = new();
+
+        /// <summary>
+        /// Encapsulates all assemblies made available to Razor pages.
+        /// </summary>
+        public List<Assembly> RazorMetadataReferences { get; } = new();
 
         /// <summary>
         /// The logger provider used for Raisin generation.
@@ -133,12 +139,19 @@ namespace Raisin.Core
         /// <see cref="InputDirectory"/>
         /// </param>
         /// <param name="generator">The output Razor model generator to use.</param>
+        /// <param name="excludes">Globs for files to exclude from the globbing operation.</param>
         /// <returns>This instance, for chaining purposes.</returns>
         public RaisinEngine WithRazorGenerator(string glob,
-            Func<string, Task<IEnumerable<(string OutputPath, BaseModel Model)>>> generator)
+            Func<string, Task<IEnumerable<(string OutputPath, BaseModel Model)>>> generator,
+            string[]? excludes = null)
         {
             var matcher = CreateGlobMatcher();
             matcher.AddInclude(glob);
+            foreach (var exclude in excludes ?? Enumerable.Empty<string>())
+            {
+                matcher.AddExclude(exclude);
+            }
+
             foreach (var file in matcher.GetResultsInFullPath(InputDirectory))
             {
                 var rel = Path.GetRelativePath(
@@ -146,7 +159,7 @@ namespace Raisin.Core
                     .PathFixup();
                 if (Outputs.TryAdd(rel,
                     async () => await Task.WhenAll((await RunGeneratorAsync(rel)).Select(async x =>
-                        (x.OutputPath, await Razor.Value.BuildFileAsync(x.Model))))))
+                        (x.OutputPath, await Razor.Value.BuildFileAsync(x.Model, x.OutputPath))))))
                 {
                     continue;
                 }
@@ -175,6 +188,64 @@ namespace Raisin.Core
 
                 return result;
             }
+        }
+
+        /// <summary>
+        /// Registers HTML files matched by the given glob expressions as <see cref="HtmlModel"/>s, such that they use
+        /// the theme while also maintaining control over the output HTML.
+        /// </summary>
+        /// <param name="globs"></param>
+        /// <returns></returns>
+        public RaisinEngine WithInnerHtml(params string[] globs)
+        {
+            var excludes = globs.Where(x => x.StartsWith("!")).ToArray();
+            return globs.Where(static x => !x.StartsWith("!")).Aggregate
+            (
+                this,
+                (current, glob) => current.WithRazorGenerator
+                (
+                    glob,
+                    async src =>
+                    (
+                        src,
+                        (BaseModel) new HtmlModel
+                        {
+                            Html = await File.ReadAllTextAsync(Path.Combine(
+                                current.InputDirectory ??
+                                throw new InvalidOperationException("No input directory provided."), src))
+                        }
+                    ).EnumerateOne(),
+                    excludes
+                )
+            );
+        }
+
+        /// <summary>
+        /// Registers CSHTML files matched by the given glob expressions as <see cref="HtmlModel"/>s, such that they use
+        /// the theme while also maintaining control over the output HTML.
+        /// </summary>
+        /// <param name="globs"></param>
+        /// <returns></returns>
+        public RaisinEngine WithInnerRazor(params string[] globs)
+        {
+            var excludes = globs.Where(x => x.StartsWith("!")).ToArray();
+            return globs.Where(static x => !x.StartsWith("!")).Aggregate
+            (
+                this,
+                (current, glob) => current.WithRazorGenerator
+                (
+                    glob,
+                    async src =>
+                    (
+                        Path.Combine(Path.GetDirectoryName(src) ?? ".", Path.GetFileNameWithoutExtension(src) + ".html")
+                            .PathFixup(),
+                        (BaseModel) new InnerRazorModel(Razor.Value, await File.ReadAllTextAsync(Path.Combine(
+                            current.InputDirectory ??
+                            throw new InvalidOperationException("No input directory provided."), src)))
+                    ).EnumerateOne(),
+                    excludes
+                )
+            );
         }
 
         /// <summary>
@@ -215,6 +286,12 @@ namespace Raisin.Core
             return this;
         }
 
+        public RaisinEngine WithRazorMetadataReferences(params Assembly[] assemblies)
+        {
+            RazorMetadataReferences.AddRange(assemblies);
+            return this;
+        }
+
         /// <summary>
         /// Registers all files matched by the given glob patterns (executed relative to the
         /// <see cref="InputDirectory" />) to be copied directly to the output, with no specific further generation
@@ -230,36 +307,80 @@ namespace Raisin.Core
             var matcher = CreateGlobMatcher();
             foreach (var glob in globs)
             {
-                matcher.AddInclude(glob);
+                if (glob[0] == '!')
+                {
+                    matcher.AddExclude(glob[1..]);
+                }
+                else
+                {
+                    matcher.AddInclude(glob);
+                }
             }
 
             foreach (var file in matcher.GetResultsInFullPath(InputDirectory))
             {
-                var rel = Path.GetRelativePath(
-                    InputDirectory ?? throw new InvalidOperationException("No input directory specified."), file);
-                if (Outputs.TryAdd(rel, async () =>
-                {
-                    await using var stream = File.OpenRead(file);
-                    await using var memoryStream = new MemoryStream();
-                    await stream.CopyToAsync(memoryStream);
-                    return (rel, memoryStream.ToArray()).EnumerateOne();
-                }))
-                {
-                    continue;
-                }
-
-                if (Outputs.ContainsKey(rel))
-                {
-                    Logger?.LogWarning($"Couldn't add preservation for \"{file}\" because this source has " +
-                                       "already been consumed by another generator.");
-                }
-                else
-                {
-                    Logger?.LogWarning($"Couldn't add preservation for \"{file}\" due to an unknown error.");
-                }
+                Preserve(file);
             }
 
             return this;
+        }
+
+        /// <summary>
+        /// Registers all files within the given source directory (or its descendants) to be copied directly to the
+        /// output, with no specific further logic to be applied.
+        /// </summary>
+        /// <remarks>
+        /// Unlike <see cref="WithPreservations"/> this can be used to change the output directory, but has less
+        /// advanced pattern-matching features.
+        /// </remarks>
+        /// <param name="srcDir">
+        /// The directory within the <see cref="InputDirectory"/> to copy to the <see cref="OutputDirectory"/> as
+        /// <paramref name="dstDir"/>.
+        /// </param>
+        /// <param name="dstDir">The directory within <see cref="OutputDirectory"/> to copy to.</param>
+        /// <param name="pattern">
+        /// The pattern to match file names. This is not a glob, rather the pattern used by
+        /// <see cref="Directory.GetFiles(string,string,SearchOption)"/>.
+        /// </param>
+        /// <returns>This instance, for chaining purposes.</returns>
+        public RaisinEngine WithDirectoryCopy(string srcDir, string? dstDir = null, string? pattern = null)
+        {
+            dstDir ??= this.GetSrcRel(srcDir) ?? throw new InvalidOperationException("Directory source rel is null.");
+            srcDir = this.GetSrcAbs(srcDir);
+            foreach (var src in Directory.GetFiles(srcDir, pattern ?? "*", SearchOption.AllDirectories))
+            {
+                Preserve(src, Path.Combine(dstDir, Path.GetRelativePath(srcDir, src)).PathFixup());
+            }
+
+            return this;
+        }
+
+        private void Preserve(string file, string? dstFile = null)
+        {
+            dstFile ??= this.GetSrcRel(file) ?? throw new InvalidOperationException("File source rel is null.");
+            var rel = Path.GetRelativePath(
+                    InputDirectory ?? throw new InvalidOperationException("No input directory specified."), dstFile)
+                .PathFixup();
+            if (Outputs.TryAdd(rel, async () =>
+            {
+                await using var stream = File.OpenRead(file);
+                await using var memoryStream = new MemoryStream();
+                await stream.CopyToAsync(memoryStream);
+                return (rel, memoryStream.ToArray()).EnumerateOne();
+            }))
+            {
+                return;
+            }
+
+            if (Outputs.ContainsKey(rel))
+            {
+                Logger?.LogWarning($"Couldn't add preservation for \"{file}\" because this source has " +
+                                   "already been consumed by another generator.");
+            }
+            else
+            {
+                Logger?.LogWarning($"Couldn't add preservation for \"{file}\" due to an unknown error.");
+            }
         }
 
         /// <summary>
@@ -383,7 +504,7 @@ namespace Raisin.Core
                         }
                     }
                 }
-            }));
+            }).Select(x => Task.Run(() => x)).ToArray());
         }
     }
 }

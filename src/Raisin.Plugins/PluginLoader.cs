@@ -1,58 +1,72 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.Loader;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
 namespace Raisin.PluginSystem
 {
     public static class PluginLoader
     {
-        public static IEnumerable<string> LoadAndEnumerateUserFacingNamespaces(
-            Func<SavedPlugin[]> savedPluginProvider,
-            Func<SavedPlugin, Assembly?> getPlugin,
+        public static readonly string[] DefaultPackageFeeds = {"https://api.nuget.org/v3/index.json"};
+        public static async IAsyncEnumerable<string> LoadAndEnumerateUserFacingNamespacesAsync(
+            string workDir,
+            IEnumerable<string> directives,
             ILoggerProvider? loggerProvider = null,
             ILogger? logger = null)
         {
-            logger ??= loggerProvider?.CreateLogger("PluginLoader");
-            var raisinVersion = typeof(PluginLoader).Assembly.GetName().Version ??
-                                throw new InvalidOperationException("Couldn't retrieve Raisin version.");
-            foreach (var plugin in savedPluginProvider())
+            logger ??= loggerProvider?.CreateLogger(nameof(PluginLoader));
+            if (!Directory.Exists(workDir))
             {
-                var asm = getPlugin(plugin);
-                if (asm is null)
+                Directory.CreateDirectory(workDir);
+            }
+
+            var packagePath = Path.Combine(workDir, "packages");
+            if (!Directory.Exists(packagePath))
+            {
+                Directory.CreateDirectory(packagePath);
+            }
+
+            var packageFeeds = new List<string>();
+            await foreach (var asm in directives.ToAsyncEnumerable().SelectMany(x =>
+            {
+                var splitDirective = x[1..].Split(' ');
+                if (splitDirective[0].ToLower() == "package" && splitDirective.Length > 1)
                 {
-                    continue;
+                    return NuGetDownloader.DownloadAsync(splitDirective[1],
+                        splitDirective.Length > 2 ? splitDirective[2] : null, packagePath,
+                        packageFeeds.Count > 0 ? packageFeeds.ToArray() : DefaultPackageFeeds,
+                        loggerProvider?.CreateLogger(nameof(NuGetDownloader)) ?? logger);
+                }
+                else if (splitDirective[0].ToLower() == "feed" && splitDirective.Length > 1)
+                {
+                    packageFeeds.Add(string.Join(" ", splitDirective.Skip(1)));
+                }
+                else if (splitDirective[0].ToLower() == "reference" && splitDirective.Length > 1)
+                {
+                    async IAsyncEnumerable<Assembly> AsmEnumerable()
+                    {
+                        yield return await Task.FromResult(
+                            Assembly.Load(new AssemblyName(string.Join(" ", splitDirective.Skip(1)))));
+                    }
+
+                    return AsmEnumerable();
                 }
 
-                if (plugin.RaisinVersion.Major != raisinVersion.Major)
-                {
-                    logger.LogError($"Couldn't load plugin \"{plugin.Name}\" because it is not compatible with " +
-                                    $"Raisin v{raisinVersion.ToString(3)}, only v{plugin.RaisinVersion.ToString(3)}");
-                    continue;
-                }
-                
+                return AsyncEnumerable.Empty<Assembly>();
+            }))
+            {
                 var attr = asm.GetCustomAttribute<RaisinPluginAttribute>();
                 if (attr is null)
                 {
-                    logger.LogError($"Couldn't load plugin \"{plugin.Name}\" because its assembly had no " +
-                                      "RaisinPluginAttribute.");
                     continue;
                 }
 
-                if (plugin.RaisinVersion > raisinVersion)
-                {
-                    logger.LogWarning($"Plugin \"{plugin.Name}\" was built against a newer version of Raisin " +
-                                      $"(v{plugin.RaisinVersion}). Consider updating the Raisin global tool.");
-                }
-                else if (raisinVersion > plugin.RaisinVersion)
-                {
-                    logger.LogWarning($"Plugin \"{plugin.Name}\" was built against an older version of Raisin " +
-                                      $"(v{plugin.RaisinVersion}). Consider updating this plugin.");
-                }
-                
-                logger.LogInformation($"Loaded {plugin.Name} v{plugin.Version.ToString(3)}");
+                var asmName = asm.GetName();
+                logger?.LogInformation($"{asmName.Name} v{asmName.Version?.ToString(3)} loaded.");
                 foreach (var userFacingNamespace in attr.UserFacingNamespaces)
                 {
                     yield return userFacingNamespace;
